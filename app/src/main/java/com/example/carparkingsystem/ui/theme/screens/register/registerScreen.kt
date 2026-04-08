@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,8 +48,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.R
+import com.example.carparkingsystem.data.AuthViewModel
 import com.example.carparkingsystem.navigation.ROUTE_LOGIN
 
 // ── Simple design tokens ───────────────────────────────────────────────────
@@ -63,13 +67,16 @@ private val ErrorRed     = Color(0xFFDC2626)
 
 @Composable
 fun RegisterScreen(
-    navController: NavController? = null,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var username        by remember { mutableStateOf("") }
     var email           by remember { mutableStateOf("") }
     var password        by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    val authViewModel: AuthViewModel = viewModel()
+    val context = LocalContext.current
 
     val scrollState = rememberScrollState()
 
@@ -232,7 +239,9 @@ fun RegisterScreen(
 
         // ── Register button ────────────────────────────────────────────────
         Button(
-            onClick  = { /* wire up */ },
+            onClick  = {
+                authViewModel.signup(username, email, password, confirmPassword, navController, context)
+            },
             enabled  = isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
@@ -262,7 +271,7 @@ fun RegisterScreen(
                 fontSize = 14.sp
             )
             TextButton(onClick = {
-                navController?.navigate(ROUTE_LOGIN)
+                navController.navigate(ROUTE_LOGIN)
             }) {
                 Text(
                     text           = "Login",
@@ -279,5 +288,5 @@ fun RegisterScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegisterScreenPreview() {
-    RegisterScreen()
+    RegisterScreen(rememberNavController())
 }

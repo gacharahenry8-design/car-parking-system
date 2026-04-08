@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.ui.theme.CarParkingSystemTheme
+import com.example.carparkingsystem.ui.theme.screens.dashboard.Dashboard
 import com.example.carparkingsystem.ui.theme.screens.login.LoginScreen
 import com.example.carparkingsystem.ui.theme.screens.register.RegisterScreen
 
@@ -22,6 +23,9 @@ fun AppNavHost(
         }
         composable(ROUTE_LOGIN) {
             LoginScreen(navController)
+        }
+        composable(ROUTE_DASHBOARD){
+            Dashboard(navController)
         }
     }
 }

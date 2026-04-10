@@ -5,7 +5,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,15 +54,14 @@ import com.example.carparkingsystem.R
 import com.example.carparkingsystem.data.AuthViewModel
 import com.example.carparkingsystem.navigation.ROUTE_LOGIN
 
-// ── Simple design tokens ───────────────────────────────────────────────────
-private val Primary      = Color(0xFF1A73E8)   // solid blue
-private val PrimaryDark  = Color(0xFF1558B0)
-private val BgWhite      = Color(0xFFFFFFFF)
-private val BgLight      = Color(0xFFF5F6FA)
-private val TextDark     = Color(0xFF1A1A2E)
-private val TextGrey     = Color(0xFF6B7280)
-private val BorderGrey   = Color(0xFFD1D5DB)
-private val ErrorRed     = Color(0xFFDC2626)
+// ── Design Tokens (Synced with Login) ──────────────────────────────────────
+private val Primary     = Color(0xFF1A73E8)
+private val BgWhite     = Color(0xFFFFFFFF)
+private val BgLight     = Color(0xFFF5F6FA)
+private val TextDark    = Color(0xFF1A1A2E)
+private val TextGrey    = Color(0xFF6B7280)
+private val BorderGrey  = Color(0xFFD1D5DB)
+private val ErrorRed    = Color(0xFFDC2626)
 
 @Composable
 fun RegisterScreen(
@@ -77,33 +75,31 @@ fun RegisterScreen(
 
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
-
     val scrollState = rememberScrollState()
 
-    val isFormValid = username.isNotBlank() &&
-            Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
+    // ── Logic Fix: Use trim() to prevent validation failure from hidden spaces ──
+    val isFormValid = username.trim().isNotBlank() &&
+            Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() &&
             password.length >= 6 &&
             password == confirmPassword
 
-    // ── Field colors ───────────────────────────────────────────────────────
     val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor        = TextDark,
-        unfocusedTextColor      = TextDark,
-        focusedContainerColor   = BgWhite,
-        unfocusedContainerColor = BgLight,
-        cursorColor             = Primary,
-        focusedBorderColor      = Primary,
-        unfocusedBorderColor    = BorderGrey,
-        focusedLabelColor       = Primary,
-        unfocusedLabelColor     = TextGrey,
+        focusedTextColor          = TextDark,
+        unfocusedTextColor        = TextDark,
+        focusedContainerColor     = BgWhite,
+        unfocusedContainerColor   = BgLight,
+        cursorColor               = Primary,
+        focusedBorderColor        = Primary,
+        unfocusedBorderColor      = BorderGrey,
+        focusedLabelColor         = Primary,
+        unfocusedLabelColor       = TextGrey,
         focusedLeadingIconColor   = Primary,
         unfocusedLeadingIconColor = TextGrey,
-        errorBorderColor        = ErrorRed,
-        errorLabelColor         = ErrorRed,
-        errorLeadingIconColor   = ErrorRed
+        errorBorderColor          = ErrorRed,
+        errorLabelColor           = ErrorRed,
+        errorLeadingIconColor     = ErrorRed
     )
 
-    // ── Root ───────────────────────────────────────────────────────────────
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -151,15 +147,12 @@ fun RegisterScreen(
             onValueChange = { username = it },
             label         = { Text("Username") },
             leadingIcon   = {
-                Icon(
-                    imageVector        = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             colors   = fieldColors,
             modifier = Modifier.fillMaxWidth(),
-            shape    = RoundedCornerShape(10.dp)
+            shape    = RoundedCornerShape(10.dp),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -170,15 +163,12 @@ fun RegisterScreen(
             onValueChange = { email = it },
             label         = { Text("Email Address") },
             leadingIcon   = {
-                Icon(
-                    imageVector        = Icons.Default.Email,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             colors   = fieldColors,
             modifier = Modifier.fillMaxWidth(),
-            shape    = RoundedCornerShape(10.dp)
+            shape    = RoundedCornerShape(10.dp),
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -189,16 +179,13 @@ fun RegisterScreen(
             onValueChange        = { password = it },
             label                = { Text("Password") },
             leadingIcon          = {
-                Icon(
-                    imageVector        = Icons.Default.Lock,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             visualTransformation = PasswordVisualTransformation(),
             colors               = fieldColors,
             modifier             = Modifier.fillMaxWidth(),
-            shape                = RoundedCornerShape(10.dp)
+            shape                = RoundedCornerShape(10.dp),
+            singleLine           = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -209,38 +196,38 @@ fun RegisterScreen(
             onValueChange        = { confirmPassword = it },
             label                = { Text("Confirm Password") },
             leadingIcon          = {
-                Icon(
-                    imageVector        = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             visualTransformation = PasswordVisualTransformation(),
             colors               = fieldColors,
             modifier             = Modifier.fillMaxWidth(),
             shape                = RoundedCornerShape(10.dp),
+            singleLine           = true,
             isError              = confirmPassword.isNotEmpty() && password != confirmPassword
         )
 
-        // Inline error hint
         if (confirmPassword.isNotEmpty() && password != confirmPassword) {
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text     = "Passwords do not match",
                 color    = ErrorRed,
                 fontSize = 12.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(start = 4.dp, top = 4.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // ── Register button ────────────────────────────────────────────────
+        // ── Register Button (Corrected Click Logic) ────────────────────────
         Button(
             onClick  = {
-                authViewModel.signup(username, email, password, confirmPassword, navController, context)
+                authViewModel.signup(
+                    username = username,
+                    email  = email,
+                    password = password,
+                    confirmPassword = confirmPassword,
+                    navController = navController,
+                    context = context
+                )
             },
             enabled  = isFormValid,
             modifier = Modifier
@@ -263,7 +250,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Login link ─────────────────────────────────────────────────────
+        // ── Login Link ─────────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text     = "Already have an account?",

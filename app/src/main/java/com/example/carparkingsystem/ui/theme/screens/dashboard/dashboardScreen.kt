@@ -42,7 +42,7 @@ fun Dashboard(navController: NavController) {
                     actionIconContentColor = Color.White
                 ),
                 actions = {
-                    IconButton(onClick = { /* Handle logout logic here */ }) {
+                    IconButton(onClick = {  }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
                             contentDescription = "Logout"

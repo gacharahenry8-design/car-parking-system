@@ -197,7 +197,7 @@ fun LoginScreen(
         // ── Login button ───────────────────────────────────────────────────
         Button(
             onClick  = {
-                authViewModel.login(email, password, navController, context)
+                authViewModel.login(email = email,password = password,navController = navController,context = context)
             },
             enabled  = isFormValid,
             modifier = Modifier

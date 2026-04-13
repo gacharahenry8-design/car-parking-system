@@ -1,6 +1,7 @@
 package com.example.carparkingsystem.ui.theme.screens.register
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,6 +31,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,17 +53,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.R
+import com.example.carparkingsystem.data.AuthEvent
 import com.example.carparkingsystem.data.AuthViewModel
 import com.example.carparkingsystem.navigation.ROUTE_LOGIN
 
-// ── Design Tokens (Synced with Login) ──────────────────────────────────────
-private val Primary     = Color(0xFF1A73E8)
-private val BgWhite     = Color(0xFFFFFFFF)
-private val BgLight     = Color(0xFFF5F6FA)
-private val TextDark    = Color(0xFF1A1A2E)
-private val TextGrey    = Color(0xFF6B7280)
-private val BorderGrey  = Color(0xFFD1D5DB)
-private val ErrorRed    = Color(0xFFDC2626)
+private val Primary    = Color(0xFF1A73E8)
+private val BgWhite    = Color(0xFFFFFFFF)
+private val BgLight    = Color(0xFFF5F6FA)
+private val TextDark   = Color(0xFF1A1A2E)
+private val TextGrey   = Color(0xFF6B7280)
+private val BorderGrey = Color(0xFFD1D5DB)
+private val ErrorRed   = Color(0xFFDC2626)
 
 @Composable
 fun RegisterScreen(
@@ -77,7 +79,27 @@ fun RegisterScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    // ── Logic Fix: Use trim() to prevent validation failure from hidden spaces ──
+    // ── Observe events from ViewModel ──────────────────────────────────────
+    LaunchedEffect(Unit) {
+        authViewModel.authEvent.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToLogin -> {
+                    navController.navigate(ROUTE_LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+                is AuthEvent.NavigateToDashboard -> {
+                    navController.navigate(com.example.carparkingsystem.navigation.ROUTE_DASHBOARD) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+                is AuthEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     val isFormValid = username.trim().isNotBlank() &&
             Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() &&
             password.length >= 6 &&
@@ -109,8 +131,6 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        // ── Logo ───────────────────────────────────────────────────────────
         Image(
             painter            = painterResource(id = R.drawable.logo),
             contentDescription = "App Logo",
@@ -123,25 +143,14 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── Title ──────────────────────────────────────────────────────────
-        Text(
-            text       = "Create Account",
-            fontSize   = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color      = TextDark
-        )
+        Text(text = "Create Account", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextDark)
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text     = "Fill in the details below to get started",
-            fontSize = 13.sp,
-            color    = TextGrey
-        )
+        Text(text = "Fill in the details below to get started", fontSize = 13.sp, color = TextGrey)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ── Username ───────────────────────────────────────────────────────
         OutlinedTextField(
             value         = username,
             onValueChange = { username = it },
@@ -149,15 +158,14 @@ fun RegisterScreen(
             leadingIcon   = {
                 Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(20.dp))
             },
-            colors   = fieldColors,
-            modifier = Modifier.fillMaxWidth(),
-            shape    = RoundedCornerShape(10.dp),
+            colors     = fieldColors,
+            modifier   = Modifier.fillMaxWidth(),
+            shape      = RoundedCornerShape(10.dp),
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ── Email ──────────────────────────────────────────────────────────
         OutlinedTextField(
             value         = email,
             onValueChange = { email = it },
@@ -165,15 +173,14 @@ fun RegisterScreen(
             leadingIcon   = {
                 Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(20.dp))
             },
-            colors   = fieldColors,
-            modifier = Modifier.fillMaxWidth(),
-            shape    = RoundedCornerShape(10.dp),
+            colors     = fieldColors,
+            modifier   = Modifier.fillMaxWidth(),
+            shape      = RoundedCornerShape(10.dp),
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ── Password ───────────────────────────────────────────────────────
         OutlinedTextField(
             value                = password,
             onValueChange        = { password = it },
@@ -190,7 +197,6 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ── Confirm Password ───────────────────────────────────────────────
         OutlinedTextField(
             value                = confirmPassword,
             onValueChange        = { confirmPassword = it },
@@ -217,23 +223,19 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // ── Register Button (Corrected Click Logic) ────────────────────────
+        // ── onClick now only passes form fields, no context/navController ──
         Button(
             onClick  = {
                 authViewModel.signup(
-                    username = username,
-                    email  = email,
-                    password = password,
-                    confirmPassword = confirmPassword,
-                    navController = navController,
-                    context = context
+                    username        = username,
+                    email           = email,
+                    password        = password,
+                    confirmPassword = confirmPassword
                 )
             },
             enabled  = isFormValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors   = ButtonDefaults.buttonColors(
                 containerColor         = Primary,
                 disabledContainerColor = BorderGrey
             ),
@@ -250,16 +252,9 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Login Link ─────────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text     = "Already have an account?",
-                color    = TextGrey,
-                fontSize = 14.sp
-            )
-            TextButton(onClick = {
-                navController.navigate(ROUTE_LOGIN)
-            }) {
+            Text(text = "Already have an account?", color = TextGrey, fontSize = 14.sp)
+            TextButton(onClick = { navController.navigate(ROUTE_LOGIN) }) {
                 Text(
                     text           = "Login",
                     color          = Primary,

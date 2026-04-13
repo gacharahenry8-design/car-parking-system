@@ -1,6 +1,7 @@
 package com.example.carparkingsystem.ui.theme.screens.login
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,17 +52,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.R
+import com.example.carparkingsystem.data.AuthEvent
 import com.example.carparkingsystem.data.AuthViewModel
+import com.example.carparkingsystem.navigation.ROUTE_DASHBOARD
 import com.example.carparkingsystem.navigation.ROUTE_REGISTER
 
-// ── Simple design tokens (identical to RegisterScreen) ─────────────────────
-private val Primary     = Color(0xFF1A73E8)
-private val BgWhite     = Color(0xFFFFFFFF)
-private val BgLight     = Color(0xFFF5F6FA)
-private val TextDark    = Color(0xFF1A1A2E)
-private val TextGrey    = Color(0xFF6B7280)
-private val BorderGrey  = Color(0xFFD1D5DB)
-private val ErrorRed    = Color(0xFFDC2626)
+private val Primary    = Color(0xFF1A73E8)
+private val BgWhite    = Color(0xFFFFFFFF)
+private val BgLight    = Color(0xFFF5F6FA)
+private val TextDark   = Color(0xFF1A1A2E)
+private val TextGrey   = Color(0xFF6B7280)
+private val BorderGrey = Color(0xFFD1D5DB)
+private val ErrorRed   = Color(0xFFDC2626)
 
 @Composable
 fun LoginScreen(
@@ -73,12 +76,32 @@ fun LoginScreen(
     val authViewModel: AuthViewModel = viewModel()
     val context = LocalContext.current
 
+    // ── Observe events from ViewModel ──────────────────────────────────────
+    LaunchedEffect(Unit) {
+        authViewModel.authEvent.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToDashboard -> {
+                    navController.navigate(ROUTE_DASHBOARD) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+                is AuthEvent.NavigateToLogin -> {
+                    navController.navigate(com.example.carparkingsystem.navigation.ROUTE_LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+                is AuthEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     val scrollState = rememberScrollState()
 
     val isFormValid = Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
             password.length >= 6
 
-    // ── Field colors (identical to RegisterScreen) ─────────────────────────
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor          = TextDark,
         unfocusedTextColor        = TextDark,
@@ -96,7 +119,6 @@ fun LoginScreen(
         errorLeadingIconColor     = ErrorRed
     )
 
-    // ── Root ───────────────────────────────────────────────────────────────
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -106,8 +128,6 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        // ── Logo ───────────────────────────────────────────────────────────
         Image(
             painter            = painterResource(id = R.drawable.logo),
             contentDescription = "App Logo",
@@ -120,35 +140,20 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── Title ──────────────────────────────────────────────────────────
-        Text(
-            text       = "Welcome Back",
-            fontSize   = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color      = TextDark
-        )
+        Text(text = "Welcome Back", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextDark)
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text     = "Sign in to your account",
-            fontSize = 13.sp,
-            color    = TextGrey
-        )
+        Text(text = "Sign in to your account", fontSize = 13.sp, color = TextGrey)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ── Email ──────────────────────────────────────────────────────────
         OutlinedTextField(
             value         = email,
             onValueChange = { email = it },
             label         = { Text("Email Address") },
             leadingIcon   = {
-                Icon(
-                    imageVector        = Icons.Default.Email,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             colors   = fieldColors,
             modifier = Modifier.fillMaxWidth(),
@@ -157,17 +162,12 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // ── Password ───────────────────────────────────────────────────────
         OutlinedTextField(
             value                = password,
             onValueChange        = { password = it },
             label                = { Text("Password") },
             leadingIcon          = {
-                Icon(
-                    imageVector        = Icons.Default.Lock,
-                    contentDescription = null,
-                    modifier           = Modifier.size(20.dp)
-                )
+                Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(20.dp))
             },
             visualTransformation = PasswordVisualTransformation(),
             colors               = fieldColors,
@@ -175,14 +175,8 @@ fun LoginScreen(
             shape                = RoundedCornerShape(10.dp)
         )
 
-        // ── Forgot password link ───────────────────────────────────────────
-        Box(
-            modifier         = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            TextButton(onClick = {
-                navController.navigate("forgot_password")
-            }) {
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+            TextButton(onClick = { navController.navigate("forgot_password") }) {
                 Text(
                     text       = "Forgot Password?",
                     color      = Primary,
@@ -194,16 +188,12 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── Login button ───────────────────────────────────────────────────
+        // ── onClick now only passes email & password ────────────────────────
         Button(
-            onClick  = {
-                authViewModel.login(email = email,password = password,navController = navController,context = context)
-            },
+            onClick  = { authViewModel.login(email = email, password = password) },
             enabled  = isFormValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors   = ButtonDefaults.buttonColors(
                 containerColor         = Primary,
                 disabledContainerColor = BorderGrey
             ),
@@ -220,16 +210,9 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Register link ──────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text     = "Don't have an account?",
-                color    = TextGrey,
-                fontSize = 14.sp
-            )
-            TextButton(onClick = {
-                navController.navigate(ROUTE_REGISTER)
-            }) {
+            Text(text = "Don't have an account?", color = TextGrey, fontSize = 14.sp)
+            TextButton(onClick = { navController.navigate(ROUTE_REGISTER) }) {
                 Text(
                     text           = "Register",
                     color          = Primary,

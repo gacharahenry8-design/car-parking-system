@@ -149,15 +149,19 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
-            value         = email,
+            value = email,
             onValueChange = { email = it },
-            label         = { Text("Email Address") },
-            leadingIcon   = {
-                Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(20.dp))
+            label = { Text("Email") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
             },
-            colors   = fieldColors,
+            colors = fieldColors,
             modifier = Modifier.fillMaxWidth(),
-            shape    = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp)
         )
 
         Spacer(modifier = Modifier.height(12.dp))

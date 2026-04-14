@@ -37,13 +37,17 @@ package com.example.carparkingsystem.ui.theme.screens.car
         import androidx.compose.ui.unit.dp
         import androidx.navigation.NavHostController
         import androidx.navigation.compose.rememberNavController
+        import com.example.carparkingsystem.data.CarViewModel
         import androidx.compose.material.icons.filled.Call
         import androidx.compose.material.icons.filled.DirectionsCar
         import androidx.compose.material.icons.filled.Numbers
-        import androidx.compose.material.icons.filled.Person
+        import androidx.compose.material.icons.filled.PersonOutline
+        import androidx.compose.ui.platform.LocalContext
+        import androidx.lifecycle.viewmodel.compose.viewModel
         import coil.compose.rememberAsyncImagePainter
+        import com.example.carparkingsystem.data.AuthViewModel
 
-        @OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
         @Composable
         fun AppCarScreen(navController: NavHostController) {
             // 1. State for Image and Text Fields
@@ -53,9 +57,13 @@ package com.example.carparkingsystem.ui.theme.screens.car
             var driverName by remember { mutableStateOf("") }
             var phoneNumber by remember { mutableStateOf("") }
 
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent()
-            ) { uri: Uri? -> imageUri = uri }
+            val carViewModel: CarViewModel = viewModel()
+            val context = LocalContext.current
+
+             val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri: Uri? -> imageUri = uri }
+
 
             Scaffold(
                 topBar = {
@@ -151,9 +159,16 @@ package com.example.carparkingsystem.ui.theme.screens.car
 
                     Button(
                         onClick = {
-
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                            carViewModel.uploadCar(
+                                imageUri = imageUri,
+                                driverName = driverName,
+                                plateNumber = plateNumber,
+                                vehicleType = vehicleType,
+                                phoneNumber = phoneNumber,
+                                context = context,
+                                navController = navController
+                            )
+                        }
                     ) {
                         Text("Save Car")
                     }

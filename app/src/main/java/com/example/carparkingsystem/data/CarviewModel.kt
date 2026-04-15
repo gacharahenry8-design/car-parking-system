@@ -5,6 +5,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.carparkingsystem.models.CarModel
 import com.example.carparkingsystem.navigation.ROUTE_DASHBOARD
 import com.google.firebase.database.FirebaseDatabase
@@ -35,31 +36,35 @@ class CarViewModel : ViewModel() {
         vehicleType: String,
         phoneNumber: String,
         context: Context,
-        navController: androidx.navigation.NavController
+        navController: NavController,
+        vehicleColor: String, // These were already correctly in your parameters
+        entryTime: String
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             try {
-
-                // 📸 Upload image
+                // 📸 Upload image to Cloudinary first
                 val imageUrl = imageUri?.let {
                     uploadToCloudinary(context, it)
                 }
 
-                // 🔥 Firebase
+                // 🔥 Get Firebase Reference
                 val ref = FirebaseDatabase.getInstance()
                     .getReference("Cars")
                     .push()
 
+                // ✅ FIXED: Mapping the values to your Model
                 val carData = CarModel(
                     id = ref.key,
-                    driverName = driverName,
                     plateNumber = plateNumber,
                     vehicleType = vehicleType,
+                    vehicleColor = vehicleColor,
+                    entryTime = entryTime,
+                    driverName = driverName,
                     phoneNumber = phoneNumber,
-                    imageUrl = imageUrl
+                    imageUrl = imageUrl // This is the URL returned from Cloudinary
                 )
 
+                // Save to Firebase
                 ref.setValue(carData).await()
 
                 withContext(Dispatchers.Main) {

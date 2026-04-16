@@ -119,8 +119,31 @@ class CarViewModel : ViewModel() {
         return secureUrl ?: throw Exception("Image URL not found")
     }
 
-    // 🧠 TODOs (later)
-    fun fetchCar() {}
+    private val _cars = mutableListOf<CarModel>()
+    val cars: List<CarModel> = _cars
+    fun fetchCar(context: Context) {
+        val ref = FirebaseDatabase.getInstance().getReference("Cars")
+        ref.get().addOnSuccessListener {
+            snapshot ->
+          _cars.clear()
+          for (child in snapshot.children) {
+              val car = child.getValue(CarModel::class.java)
+              car?.let {it.id = child.key
+                  _cars.add(it) }
+          }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Failed to load cars", Toast.LENGTH_LONG).show()
+        }
+    }
     fun updateCar() {}
-    fun deleteCar() {}
+    fun deleteCar(id: String, context: Context) {
+        val ref = FirebaseDatabase.getInstance().getReference("Cars/$id")
+        ref.removeValue().addOnCompleteListener {
+            if (it.isSuccessful) {
+                Toast.makeText(context, "Car deleted successfully", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Failed to delete car", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

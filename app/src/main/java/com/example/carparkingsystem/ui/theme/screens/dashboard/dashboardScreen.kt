@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.navigation.ROUTE_ADDCAR
+import com.example.carparkingsystem.navigation.ROUTE_VIEWCARS
 import com.example.carparkingsystem.ui.theme.CarParkingSystemTheme
 
 
@@ -204,7 +205,7 @@ fun Dashboard(navController: NavController) {
                     icon = Icons.Default.DirectionsCar,
                     color = Color(0xFF185FA5),
                     modifier = Modifier.weight(1f),
-                    
+                    onClick = { navController.navigate(ROUTE_VIEWCARS) }
                 )
             }
 

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.carparkingsystem.ui.theme.CarParkingSystemTheme
 
 import com.example.carparkingsystem.ui.theme.screens.car.AppCarScreen
+import com.example.carparkingsystem.ui.theme.screens.car.CarListScreen
 
 import com.example.carparkingsystem.ui.theme.screens.dashboard.Dashboard
 
@@ -79,7 +80,9 @@ fun AppNavHost(
 
         }
 
-
+        composable( ROUTE_VIEWCARS ){
+            CarListScreen(navController)
+        }
 
     }
 

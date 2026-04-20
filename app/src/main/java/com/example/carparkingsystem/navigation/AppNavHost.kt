@@ -23,7 +23,7 @@ import com.example.carparkingsystem.ui.theme.screens.dashboard.Dashboard
 import com.example.carparkingsystem.ui.theme.screens.login.LoginScreen
 
 import com.example.carparkingsystem.ui.theme.screens.register.RegisterScreen
-
+import com.example.carparkingsystem.ui.theme.screens.splash.SplashScreen
 
 
 @Composable
@@ -43,6 +43,7 @@ fun AppNavHost(
         startDestination = startDestination
 
     ) {
+
 
 
 // 🟢 Register Screen
@@ -82,6 +83,10 @@ fun AppNavHost(
 
         composable( ROUTE_VIEWCARS ){
             CarListScreen(navController)
+        }
+
+        composable(ROUTE_SPLASH) {
+            SplashScreen(navController = navController)
         }
 
     }

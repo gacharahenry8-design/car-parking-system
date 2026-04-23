@@ -6,8 +6,10 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.compose.runtime.mutableStateListOf
 import com.example.carparkingsystem.models.CarModel
 import com.example.carparkingsystem.navigation.ROUTE_DASHBOARD
+import com.example.carparkingsystem.navigation.ROUTE_VIEWCARS
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -119,31 +121,89 @@ class CarViewModel : ViewModel() {
         return secureUrl ?: throw Exception("Image URL not found")
     }
 
-    private val _cars = mutableListOf<CarModel>()
+    private val _cars = mutableStateListOf<CarModel>()
     val cars: List<CarModel> = _cars
     fun fetchCar(context: Context) {
-        val ref = FirebaseDatabase.getInstance().getReference("Cars")
-        ref.get().addOnSuccessListener {
-            snapshot ->
-          _cars.clear()
-          for (child in snapshot.children) {
-              val car = child.getValue(CarModel::class.java)
-              car?.let {it.id = child.key
-                  _cars.add(it) }
-          }
-        }.addOnFailureListener {
-            Toast.makeText(context, "Failed to load cars", Toast.LENGTH_LONG).show()
+        try {
+            val ref = FirebaseDatabase.getInstance().getReference("Cars")
+            ref.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
+                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    _cars.clear()
+                    for (child in snapshot.children) {
+                        val car = child.getValue(CarModel::class.java)
+                        car?.let {
+                            it.id = child.key
+                            _cars.add(it)
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                    Toast.makeText(context, "Failed to load cars: ${error.message}", Toast.LENGTH_LONG).show()
+                }
+            })
+        } catch (e: Exception) {
+            // Handle cases where Firebase is not initialized (like in Preview)
         }
     }
-    fun updateCar() {}
-    fun deleteCar(id: String, context: Context) {
-        val ref = FirebaseDatabase.getInstance().getReference("Cars/$id")
-        ref.removeValue().addOnCompleteListener {
-            if (it.isSuccessful) {
-                Toast.makeText(context, "Car deleted successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Failed to delete car", Toast.LENGTH_SHORT).show()
+    fun updateCar(
+        carId: String,
+        imageUri: Uri?,
+        driverName: String,
+        plateNumber: String,
+        vehicleType: String,
+        phoneNumber: String,
+        vehicleColor: String,
+        entryTime: String,
+        context: Context,
+        navController: NavController,
+        currentImageUrl: String? = null
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Handle Image: If new image picked, upload it.
+                // Otherwise, use the provided currentImageUrl.
+                val imageUrl = if (imageUri != null) {
+                    uploadToCloudinary(context, imageUri)
+                } else {
+                    currentImageUrl
+                }
+
+                // 2. Map the updated values
+                val updatedCar = mapOf(
+                    "id" to carId,
+                    "plateNumber" to plateNumber,
+                    "vehicleType" to vehicleType,
+                    "driverName" to driverName,
+                    "phoneNumber" to phoneNumber,
+                    "imageUrl" to (imageUrl ?: ""),
+                    "vehicleColor" to vehicleColor,
+                    "entryTime" to entryTime
+                )
+
+                // 3. Update Firebase Realtime Database
+                val ref = FirebaseDatabase.getInstance().getReference("Cars/$carId")
+                ref.updateChildren(updatedCar).await()
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Car Updated Successfully", Toast.LENGTH_LONG).show()
+                    // Use popBackStack() to go back to the list screen
+                    navController.popBackStack()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Update Failed: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
+        }
+    }
+    fun deleteCar(carId: String, context: Context, navController: NavController) {
+        val ref = FirebaseDatabase.getInstance().getReference("Cars/$carId")
+        ref.removeValue().addOnSuccessListener {
+            _cars.removeAll { it.id == carId }
+            Toast.makeText(context, "Car deleted successfully", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener {
+            Toast.makeText(context, "Failed to delete car: ${it.message}", Toast.LENGTH_LONG).show()
         }
     }
 }

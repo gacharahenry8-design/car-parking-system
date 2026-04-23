@@ -19,7 +19,7 @@ sealed class AuthEvent {
 
 class AuthViewModel : ViewModel() {
 
-    private val auth = FirebaseAuth.getInstance()
+    private val auth by lazy { FirebaseAuth.getInstance() }
 
     private val _authEvent = MutableSharedFlow<AuthEvent>()
     val authEvent: SharedFlow<AuthEvent> = _authEvent

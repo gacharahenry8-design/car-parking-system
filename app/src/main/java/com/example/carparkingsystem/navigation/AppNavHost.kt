@@ -6,17 +6,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 
 import androidx.navigation.compose.NavHost
 
 import androidx.navigation.compose.composable
 
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 import com.example.carparkingsystem.ui.theme.CarParkingSystemTheme
 
 import com.example.carparkingsystem.ui.theme.screens.car.AppCarScreen
 import com.example.carparkingsystem.ui.theme.screens.car.CarListScreen
+import com.example.carparkingsystem.ui.theme.screens.car.UpdateCarScreen
 
 import com.example.carparkingsystem.ui.theme.screens.dashboard.Dashboard
 
@@ -36,59 +39,26 @@ fun AppNavHost(
 
 ) {
 
-    NavHost(
+    NavHost(navController = navController, startDestination = startDestination) {
 
-        navController = navController,
-
-        startDestination = startDestination
-
-    ) {
-
-
-
-// 🟢 Register Screen
-
-        composable(ROUTE_REGISTER) {
-
-            RegisterScreen(navController)
-
+        composable(ROUTE_REGISTER) { RegisterScreen(navController) }
+        composable(ROUTE_LOGIN) { LoginScreen(navController) }
+        composable(ROUTE_DASHBOARD) { Dashboard(navController) }
+        composable(ROUTE_ADDCAR) { AppCarScreen(navController) }
+        composable( ROUTE_VIEWCARS ){ CarListScreen(navController) }
+        composable(ROUTE_SPLASH) { SplashScreen(navController = navController) }
+        composable(
+            route = ROUTE_UPDATE_CAR,
+            arguments = listOf(
+                navArgument("carId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val carId = backStackEntry.arguments?.getString("carId") ?: ""
+            UpdateCarScreen(
+                navController = navController,
+                carId = carId
+            )
         }
-
-
-// 🔵 Login Screen
-
-        composable(ROUTE_LOGIN) {
-
-            LoginScreen(navController)
-
-        }
-
-
-// 🟣 Dashboard
-
-        composable(ROUTE_DASHBOARD) {
-
-            Dashboard(navController)
-
-        }
-
-
-// 🚗 Add Car Screen
-
-        composable(ROUTE_ADDCAR) {
-
-            AppCarScreen(navController)
-
-        }
-
-        composable( ROUTE_VIEWCARS ){
-            CarListScreen(navController)
-        }
-
-        composable(ROUTE_SPLASH) {
-            SplashScreen(navController = navController)
-        }
-
     }
 
 } 

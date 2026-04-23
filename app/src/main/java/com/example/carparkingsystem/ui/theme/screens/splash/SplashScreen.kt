@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,7 +29,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navController: NavController? = null) {
-    val auth = FirebaseAuth.getInstance()
+    val isPreview = LocalInspectionMode.current
 
     // --- Animation States ---
     val iconScale     = remember { Animatable(0f) }
@@ -64,14 +65,17 @@ fun SplashScreen(navController: NavController? = null) {
         // Hold then navigate
         delay(1800)
 
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            navController?.navigate(ROUTE_DASHBOARD) {
-                popUpTo(0) { inclusive = true }
-            }
-        } else {
-            navController?.navigate(ROUTE_LOGIN) {
-                popUpTo(0) { inclusive = true }
+        if (!isPreview) {
+            val auth = FirebaseAuth.getInstance()
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                navController?.navigate(ROUTE_DASHBOARD) {
+                    popUpTo(0) { inclusive = true }
+                }
+            } else {
+                navController?.navigate(ROUTE_LOGIN) {
+                    popUpTo(0) { inclusive = true }
+                }
             }
         }
     }
